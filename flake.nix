@@ -10,32 +10,58 @@
       ];
 
       forEachSystem = nixpkgs.lib.genAttrs systems;
+      pkgsFor = forEachSystem (
+        system:
+        import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        }
+      );
       mkNixosCfg =
         username: system: name:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
             inherit inputs;
+            pkgs = pkgsFor.${system};
           };
           modules = [
             {
               networking.hostName = name;
               user.username = username;
             }
+            ./hosts/common
             inputs.home-manager.nixosModules.home-manager
           ];
         };
-    in
-    {
-      formatter = forEachSystem (
+
+      genConfigs =
+        username: names:
+        nixpkgs.lib.mkMerge (
+          map (
+            system:
+            nixpkgs.lib.listToAttrs (
+              map (name: {
+                name = name;
+                value = mkNixosCfg username system name;
+              }) names
+            )
+          ) systems
+        );
+    in rec {
+      apps = forEachSystem (
         system:
         let
-          pkgs = import nixpkgs {
-            inherit system;
-            config.allowUnfree = true;
-          };
+          pkgs = pkgsFor.${system};
         in
-        pkgs.nixfmt-rfc-style
+        {
+          fmt = {
+            type = "app";
+            program = "${pkgs.writeShellScript "fmt-all" ''
+              find . -name '*.nix' -type f -exec ${pkgs.nixfmt-rfc-style}/bin/nixfmt {} \;
+            ''}";
+          };
+        }
       );
 
       # Contains full system builds, including home-manager
@@ -47,6 +73,7 @@
         forEachSystem (system: {
           main = mkNixosCfg username system "race4k";
         });
+      nixosConfigurations.main = mkNixosCfg "s4rch" "x86_64-linux" "main";
     };
 
   inputs = {
