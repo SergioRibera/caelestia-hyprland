@@ -126,7 +126,6 @@ in
       default = false;
     };
     user = {
-      enableHM = mkEnableOption "Enable home-manager this host";
       browser = mkOption {
         type = types.enum [
           "firefox"

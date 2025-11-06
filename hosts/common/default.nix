@@ -6,6 +6,7 @@ in
   imports = [
     ./boot.nix
     ./hardware.nix
+    ./options.nix
     ./packages.nix
     ./programs.nix
     ./services.nix
