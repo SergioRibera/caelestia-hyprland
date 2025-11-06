@@ -15,6 +15,9 @@
         import nixpkgs {
           inherit system;
           config.allowUnfree = true;
+          overlays = [
+            inputs.mac-style-plymouth.overlays.default
+          ];
         }
       );
       mkNixosCfg =
@@ -32,7 +35,8 @@
             }
             ./hosts/common
             inputs.home-manager.nixosModules.home-manager
-          ];
+          ]
+          ++ [ ./hosts/${name}.nix ];
         };
 
       genConfigs =
