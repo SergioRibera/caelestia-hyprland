@@ -15,5 +15,8 @@
 
     # ssl
     openssl
+
+    # Rust
+    rust-bin.stable.latest.default
   ];
 }

@@ -16,6 +16,7 @@
           inherit system;
           config.allowUnfree = true;
           overlays = [
+            inputs.rust.overlays.default
             inputs.mac-style-plymouth.overlays.default
           ];
         }
@@ -82,6 +83,10 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    rust = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
