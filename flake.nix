@@ -1,7 +1,7 @@
 {
   description = "Hyprland implement caelestia";
   outputs =
-    { nixpkgs, ... }@inputs:
+    { nixpkgs, nixos-generators, ... }@inputs:
     let
       # System types to support.
       systems = [
@@ -10,35 +10,37 @@
       ];
 
       forEachSystem = nixpkgs.lib.genAttrs systems;
-      pkgsFor = forEachSystem (
+
+      pkgsFor =
         system:
-        import nixpkgs {
+        (import nixpkgs {
           inherit system;
           config.allowUnfree = true;
           overlays = [
             inputs.rust.overlays.default
             inputs.mac-style-plymouth.overlays.default
           ];
-        }
-      );
+        });
+      nixosBaseArgs = username: system: name: {
+        inherit system;
+        specialArgs = {
+          inherit inputs;
+          pkgs = pkgsFor system;
+        };
+        modules = [
+          {
+            networking.hostName = name;
+            user.username = username;
+          }
+          # ./home
+          ./hosts/common
+          inputs.home-manager.nixosModules.home-manager
+        ]
+        ++ [ ./hosts/${name}.nix ];
+      };
       mkNixosCfg =
         username: system: name:
-        nixpkgs.lib.nixosSystem {
-          inherit system;
-          specialArgs = {
-            inherit inputs;
-            pkgs = pkgsFor.${system};
-          };
-          modules = [
-            {
-              networking.hostName = name;
-              user.username = username;
-            }
-            ./hosts/common
-            inputs.home-manager.nixosModules.home-manager
-          ]
-          ++ [ ./hosts/${name}.nix ];
-        };
+        nixpkgs.lib.nixosSystem (nixosBaseArgs username system name);
 
       genConfigs =
         username: names:
@@ -57,7 +59,7 @@
       apps = forEachSystem (
         system:
         let
-          pkgs = pkgsFor.${system};
+          pkgs = pkgsFor system;
         in
         {
           fmt = {
@@ -68,6 +70,18 @@
           };
         }
       );
+
+      packages = forEachSystem (system: {
+        vm = nixos-generators.nixosGenerate (
+          {
+            format = "raw";
+            modules = [
+              { nix.registry.nixpkgs.flake = nixpkgs; }
+            ];
+          }
+          // (nixosBaseArgs "s4rch" system "main")
+        );
+      });
 
       # Contains full system builds, including home-manager
       # nixos-rebuild switch --flake .#main
