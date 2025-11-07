@@ -64,7 +64,8 @@
             )
           ) systems
         );
-    in rec {
+    in
+    {
       apps = forEachSystem (
         system:
         let
@@ -83,7 +84,17 @@
       packages = forEachSystem (system: {
         vm = nixos-generators.nixosGenerate (
           {
-            format = "raw";
+            format = "vm";
+            modules = [
+              { nix.registry.nixpkgs.flake = nixpkgs; }
+            ];
+          }
+          // (nixosBaseArgs "s4rch" system "main")
+        );
+
+        iso = nixos-generators.nixosGenerate (
+          {
+            format = "iso";
             modules = [
               { nix.registry.nixpkgs.flake = nixpkgs; }
             ];
@@ -94,13 +105,7 @@
 
       # Contains full system builds, including home-manager
       # nixos-rebuild switch --flake .#main
-      nixosConfigurations =
-        let
-          username = "s4rch";
-        in
-        forEachSystem (system: {
-          main = mkNixosCfg username system "race4k";
-        });
+      # nixosConfigurations = genConfigs "s4rch" [ "main" ];
       nixosConfigurations.main = mkNixosCfg "s4rch" "x86_64-linux" "main";
     };
 
