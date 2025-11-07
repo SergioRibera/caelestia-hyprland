@@ -53,15 +53,17 @@
 
       genConfigs =
         username: names:
-        map (
-          system:
-          nixpkgs.lib.listToAttrs (
-            map (name: {
-              name = name;
-              value = mkNixosCfg username system name;
-            }) names
-          )
-        ) systems;
+        nixpkgs.lib.mkMerge (
+          map (
+            system:
+            nixpkgs.lib.listToAttrs (
+              map (name: {
+                name = name;
+                value = mkNixosCfg username system name;
+              }) names
+            )
+          ) systems
+        );
 
       nixosGenerators =
         username: name: variants:
@@ -100,10 +102,6 @@
       );
 
       packages = nixosGenerators "s4rch" "main" [
-        {
-          name = "vm";
-          format = "vm";
-        }
         {
           name = "iso";
           format = "install-iso";
