@@ -1,7 +1,12 @@
 {
   description = "Hyprland implement caelestia";
   outputs =
-    { nixpkgs, nixos-generators, ... }@inputs:
+    {
+      nixpkgs,
+      nixos-generators,
+      caelestia-shell,
+      ...
+    }@inputs:
     let
       # System types to support.
       systems = [
@@ -19,6 +24,10 @@
           overlays = [
             inputs.rust.overlays.default
             inputs.mac-style-plymouth.overlays.default
+            (final: prev: {
+              caelestia-shell = caelestia-shell.packages.${system}.caelestia-shell;
+              caelestia-cli = caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
+            })
           ];
         });
       nixosBaseArgs = username: system: name: {
