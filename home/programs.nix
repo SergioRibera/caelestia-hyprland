@@ -4,6 +4,7 @@ let
 in
 {
   imports = [
+    ./shell
     ./tools/bat.nix
     ./tools/git.nix
   ];
