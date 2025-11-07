@@ -53,16 +53,34 @@
 
       genConfigs =
         username: names:
-        nixpkgs.lib.mkMerge (
-          map (
-            system:
-            nixpkgs.lib.listToAttrs (
-              map (name: {
-                name = name;
-                value = mkNixosCfg username system name;
-              }) names
-            )
-          ) systems
+        map (
+          system:
+          nixpkgs.lib.listToAttrs (
+            map (name: {
+              name = name;
+              value = mkNixosCfg username system name;
+            }) names
+          )
+        ) systems;
+
+      nixosGenerators =
+        username: name: variants:
+        forEachSystem (
+          system:
+          (nixpkgs.lib.listToAttrs (
+            map (v: {
+              name = v.name;
+              value = nixos-generators.nixosGenerate (
+                {
+                  format = v.format;
+                  # modules = [
+                  #   { nix.registry.nixpkgs.flake = nixpkgs; }
+                  # ];
+                }
+                // (nixosBaseArgs username system name)
+              );
+            }) variants
+          ))
         );
     in
     {
@@ -81,32 +99,24 @@
         }
       );
 
-      packages = forEachSystem (system: {
-        vm = nixos-generators.nixosGenerate (
-          {
-            format = "vm";
-            modules = [
-              { nix.registry.nixpkgs.flake = nixpkgs; }
-            ];
-          }
-          // (nixosBaseArgs "s4rch" system "main")
-        );
-
-        iso = nixos-generators.nixosGenerate (
-          {
-            format = "iso";
-            modules = [
-              { nix.registry.nixpkgs.flake = nixpkgs; }
-            ];
-          }
-          // (nixosBaseArgs "s4rch" system "main")
-        );
-      });
+      packages = nixosGenerators "s4rch" "main" [
+        {
+          name = "vm";
+          format = "vm";
+        }
+        {
+          name = "iso";
+          format = "install-iso";
+        }
+        {
+          name = "iso-test";
+          format = "iso";
+        }
+      ];
 
       # Contains full system builds, including home-manager
       # nixos-rebuild switch --flake .#main
-      # nixosConfigurations = genConfigs "s4rch" [ "main" ];
-      nixosConfigurations.main = mkNixosCfg "s4rch" "x86_64-linux" "main";
+      nixosConfigurations = genConfigs "s4rch" [ "main" ];
     };
 
   inputs = {
