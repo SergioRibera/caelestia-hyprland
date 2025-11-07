@@ -32,7 +32,7 @@
             networking.hostName = name;
             user.username = username;
           }
-          # ./home
+          ./home
           ./hosts/common
           inputs.home-manager.nixosModules.home-manager
         ]

@@ -8,8 +8,11 @@
     curl
     wget
     jq
+    ouch
+    gitui
     ripgrep
     bottom
+    fastfetch
 
     nix-output-monitor
 
