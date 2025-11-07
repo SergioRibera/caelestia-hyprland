@@ -33,9 +33,11 @@ with pkgs;
 
     home.packages = [
       # Dev Utils
-      (pkgs.neovim-unwrapped.overrideAttrs (attrs: prev: {
-         postBuild = "rm -rf $out/share/applications";
-      }))
+      (pkgs.neovim-unwrapped.overrideAttrs (
+        attrs: prev: {
+          postBuild = "rm -rf $out/share/applications";
+        }
+      ))
       neovide
 
       wrkflw
@@ -67,6 +69,7 @@ with pkgs;
       # GUI
       easyeffects
       pwvucontrol
+      playerctl
 
       # Discord
       (discord.overrideAttrs (
