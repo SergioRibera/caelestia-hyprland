@@ -18,7 +18,7 @@
     };
 
     loader = {
-      timeout = 3;
+      timeout = pkgs.lib.mkDefault 3;
       efi.canTouchEfiVariables = true;
       systemd-boot.enable = true;
     };

@@ -64,7 +64,11 @@ with pkgs;
       libnotify
       wl-clipboard
       hyprpicker
-      swww
+
+      # Caelestia Shell
+      hyprland
+      caelestia-shell
+      caelestia-cli
 
       # GUI
       easyeffects

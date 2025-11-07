@@ -28,11 +28,13 @@ in
 
   users = {
     defaultUserShell = pkgs."${config.shell.name}";
+    mutableUsers = true;
     users."${username}" = {
       isNormalUser = user.isNormalUser;
       name = username;
       home = user.homepath;
       extraGroups = user.groups;
+      initialPassword = "test";
     };
   };
 
